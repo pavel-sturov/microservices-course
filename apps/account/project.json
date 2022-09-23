@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/accounts/src",
+  "sourceRoot": "apps/account/src",
   "projectType": "application",
   "targets": {
     "build": {
@@ -9,10 +9,10 @@
       "options": {
         "target": "node",
         "compiler": "tsc",
-        "outputPath": "dist/apps/accounts",
-        "main": "apps/accounts/src/main.ts",
-        "tsConfig": "apps/accounts/tsconfig.app.json",
-        "assets": ["apps/accounts/src/assets"]
+        "outputPath": "dist/apps/account",
+        "main": "apps/account/src/main.ts",
+        "tsConfig": "apps/account/tsconfig.app.json",
+        "assets": ["apps/account/src/assets"]
       },
       "configurations": {
         "production": {
@@ -21,8 +21,8 @@
           "inspect": false,
           "fileReplacements": [
             {
-              "replace": "apps/accounts/src/environments/environment.ts",
-              "with": "apps/accounts/src/environments/environment.prod.ts"
+              "replace": "apps/account/src/environments/environment.ts",
+              "with": "apps/account/src/environments/environment.prod.ts"
             }
           ]
         }
@@ -31,11 +31,11 @@
     "serve": {
       "executor": "@nrwl/js:node",
       "options": {
-        "buildTarget": "accounts:build"
+        "buildTarget": "account:build"
       },
       "configurations": {
         "production": {
-          "buildTarget": "accounts:build:production"
+          "buildTarget": "account:build:production"
         }
       }
     },
@@ -43,14 +43,14 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/accounts/**/*.ts"]
+        "lintFilePatterns": ["apps/account/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/accounts"],
+      "outputs": ["coverage/apps/account"],
       "options": {
-        "jestConfig": "apps/accounts/jest.config.ts",
+        "jestConfig": "apps/account/jest.config.ts",
         "passWithNoTests": true
       }
     }
