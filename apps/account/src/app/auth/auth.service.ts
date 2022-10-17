@@ -1,9 +1,9 @@
+import { AccountRegister } from '@microservices-course/contracts'
 import { UserRole } from '@microservices-course/interfaces'
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { UserEntity } from '../user/entities/user.entity'
 import { UserRepository } from '../user/repositories/user.repository'
-import { RegisterDto } from './dtos/register.dto'
 
 @Injectable()
 export class AuthService {
@@ -13,7 +13,7 @@ export class AuthService {
   ) {
   }
 
-  async register({ email, password, displayName }: RegisterDto) {
+  async register({ email, password, displayName }: AccountRegister.Request) {
     const candidate = await this.userRepository.findUser(email)
 
     if (candidate) {
@@ -41,7 +41,6 @@ export class AuthService {
 
     const userEntity        = new UserEntity(user)
     const isCorrectPassword = await userEntity.validatePassword(password)
-
     if (!isCorrectPassword) {
       throw new Error('Login or password is invalid')
     }

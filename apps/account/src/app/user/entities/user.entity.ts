@@ -1,5 +1,9 @@
+import { AccountChangedCourse } from '@microservices-course/contracts'
 import {
+  IDomainEvent,
   IUser,
+  IUserCourses,
+  PurchaseState,
   UserRole,
 } from '@microservices-course/interfaces'
 import {
@@ -14,12 +18,55 @@ export class UserEntity implements IUser {
   email: string
   passwordHash: string
   role: UserRole
+  courses?: IUserCourses[]
+  events: IDomainEvent[] = []
 
   constructor(user: IUser) {
-    this._id         = user._id
-    this.displayName = user.displayName
-    this.email       = user.email
-    this.role        = user.role
+    this._id          = user._id
+    this.displayName  = user.displayName
+    this.email        = user.email
+    this.role         = user.role
+    this.passwordHash = user.passwordHash
+    this.courses      = user.courses
+  }
+
+  public setCourseStatus(courseId: string, state: PurchaseState) {
+    const candidate = this.courses.filter(({ _id }) => _id === courseId)
+
+    if (!candidate) {
+      this.courses.push({ courseId, purchaseState: state })
+
+      return this
+    }
+
+    if (state === PurchaseState.Canceled) {
+      this.courses = this.courses.filter(({ _id }) => _id !== courseId)
+
+      return this
+    }
+
+    this.courses = this.courses.map(course => {
+      if (course._id !== courseId) {
+        return { ...course, purchaseState: state }
+      }
+
+      return course
+    })
+
+    this.events.push({
+      topic: AccountChangedCourse.topic,
+      data:  { courseId, userId: this._id, state },
+    })
+
+    return this
+  }
+
+  public getPublicProfile() {
+    return {
+      email:       this.email,
+      role:        this.role,
+      displayName: this.displayName,
+    }
   }
 
   public async setPassword(password: string) {
@@ -33,4 +80,9 @@ export class UserEntity implements IUser {
     return compare(password, this.passwordHash)
   }
 
+  public updateProfile(displayName: string) {
+    this.displayName = displayName
+
+    return this
+  }
 }
