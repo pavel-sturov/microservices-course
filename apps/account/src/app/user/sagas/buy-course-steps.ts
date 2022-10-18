@@ -35,7 +35,7 @@ export class BuyCourseSagaStateStarted extends BuyCourseSagaState {
     return { paymentLink, user: this.saga.user }
   }
 
-  checkPayment(): Promise<{ user: UserEntity, status: PaymentStatus }> {
+  public checkPayment(): Promise<{ user: UserEntity, status: PaymentStatus }> {
     throw new Error('Payment is not exist')
   }
 
@@ -52,29 +52,29 @@ export class BuyCourseSagaStateProcess extends BuyCourseSagaState {
   }
 
   public async checkPayment(): Promise<{ user: UserEntity, status: PaymentStatus }> {
-    const { courseId, user, user: { _id: userId } } = this.saga
-
     const { status } = await this.saga.rmqService.send<PaymentCheck.Request, PaymentCheck.Response>(
       PaymentCheck.topic,
-      { courseId, userId },
+      { courseId: this.saga.courseId, userId: this.saga.user._id },
     )
 
     if (status === 'canceled') {
-      this.saga.setState(PurchaseState.Canceled, courseId)
+      this.saga.setState(PurchaseState.Canceled, this.saga.courseId)
 
-      return { user, status: 'canceled' }
+      return { user: this.saga.user, status: 'canceled' }
     }
 
-    if (status !== 'success') {
-      return { user, status: 'success' }
+    if (status === 'success') {
+      this.saga.setState(PurchaseState.Purchased, this.saga.courseId)
+
+      return { user: this.saga.user, status: 'success' }
     }
 
-    this.saga.setState(PurchaseState.Purchased, courseId)
+    this.saga.setState(PurchaseState.WaitingForPayment, this.saga.courseId)
 
-    return { user, status: 'progress' }
+    return { user: this.saga.user, status: 'progress' }
   }
 
-  cancel(): Promise<{ user: UserEntity }> {
+  public cancel(): Promise<{ user: UserEntity }> {
     throw new Error('Payment is already in process')
   }
 }

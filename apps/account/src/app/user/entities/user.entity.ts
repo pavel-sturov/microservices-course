@@ -31,7 +31,7 @@ export class UserEntity implements IUser {
   }
 
   public setCourseStatus(courseId: string, state: PurchaseState) {
-    const candidate = this.courses.filter(({ _id }) => _id === courseId)
+    const candidate = this.courses.find(course => course.courseId === courseId)
 
     if (!candidate) {
       this.courses.push({ courseId, purchaseState: state })
@@ -40,17 +40,15 @@ export class UserEntity implements IUser {
     }
 
     if (state === PurchaseState.Canceled) {
-      this.courses = this.courses.filter(({ _id }) => _id !== courseId)
+      this.courses = this.courses.filter(course => course.courseId === courseId)
 
       return this
     }
 
-    this.courses = this.courses.map(course => {
-      if (course._id !== courseId) {
-        return { ...course, purchaseState: state }
+    this.courses.forEach(course => {
+      if (course.courseId === courseId) {
+        course.purchaseState = state
       }
-
-      return course
     })
 
     this.events.push({
@@ -59,6 +57,10 @@ export class UserEntity implements IUser {
     })
 
     return this
+  }
+
+  public getCourseState(courseId: string): PurchaseState {
+    return this.courses.find(course => course.courseId === courseId)?.purchaseState ?? PurchaseState.Started
   }
 
   public getPublicProfile() {

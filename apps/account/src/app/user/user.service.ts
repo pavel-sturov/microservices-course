@@ -16,13 +16,9 @@ export class UserService {
   }
 
   async changeProfile(user: Pick<IUser, 'displayName'>, id: string) {
-    const candidate = await this.userRepository.findUserById(id)
+    const userEntity = await this.getUserEntity(id)
 
-    if (!candidate) {
-      throw new Error('User is not found')
-    }
-
-    const userEntity = new UserEntity(candidate).updateProfile(user.displayName)
+    userEntity.updateProfile(user.displayName)
 
     await this.updateUser(userEntity)
 
